@@ -1,15 +1,17 @@
 import socket 
 import threading
+from colorama import init, Fore
 
-username = input("Enter your username: ")
+# Iniciar (En Windows)
+# init()
 
-HOST = "127.0.0.1" 
-PORT = 65123 
+username = input("Ingrese su nombre de usuario: ")
+print("")
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))
-
-def receive_messages():
+'''
+    Función que recibe los mensajes enviados por el servidor y los muestra al usuario
+'''
+def receive_messages(client):
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
@@ -23,13 +25,23 @@ def receive_messages():
             client.close()
             break
 
-def write_messages():
+'''
+    Función principal que inicia la conexión del cliente con el servidor y maneja sus mensajes de entrada
+'''
+def client():
+    
+    HOST = "127.0.0.1" 
+    PORT = 65123 
+
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((HOST, PORT))
+
+    receive_thread = threading.Thread(target=receive_messages, args=(client,))
+    receive_thread.start()
+
     while True:
-        message = f"{username}: {input('')}"
+        msg = input("")
+        message = f"\n{Fore.RESET}{username}: {msg}\n"
         client.send(message.encode('utf-8'))
 
-receive_thread = threading.Thread(target=receive_messages)
-receive_thread.start()
-
-write_thread = threading.Thread(target=write_messages)
-write_thread.start()
+client()
